@@ -190,8 +190,8 @@ function renderApply(t) {
   const currentYear = new Date().getFullYear();
   const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
 
-  return `<div class="detail-cont" style="padding:20px 15px;">
-      <a href="#" class="d-back" onclick="nav('detail', event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:15px;">${t.back}</a>
+  return `<div class="detail-cont" style="padding: 30px 15px 320px;">
+      <a href="#" class="d-back" onclick="nav('detail', event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:20px; font-weight:700; font-size:18px;">${t.back}</a>
       <div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
       <div style="color:var(--gold); margin-bottom:15px; font-weight:700">${state.current.title}</div>
       <div class="form-instruction">${t.form_desc}</div>
@@ -230,8 +230,9 @@ function renderBottom(t) {
 }
 
 function setCity(c) { state.filters.city = c; applyFilters(); }
-function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); window.scrollTo({top: 0, behavior: 'instant'}); }
-function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); window.scrollTo({top: 0, behavior: 'instant'}); }
+function scrollUp() { requestAnimationFrame(() => window.scrollTo({top: 0, behavior: 'instant'})); }
+function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); scrollUp(); }
+function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); scrollUp(); }
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
