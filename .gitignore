@@ -1,0 +1,8 @@
+# NástupCZ — TOTAL DARKNESS (GEMINI INSTRUCTION)
+*
+# Возвращаем избранных
+!webapp/
+!webapp/app.js
+!webapp/index.html
+!webapp/styles.css
+!.gitignore
