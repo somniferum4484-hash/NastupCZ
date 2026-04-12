@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="NástupCZ — Робота в Чехії для українців. Перегляньте актуальні вакансії з житлом та без.">
+  <meta name="theme-color" content="#0a0e1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="NástupCZ — Робота в Чехії">
+  <meta property="og:description" content="Актуальні вакансії для українців. Официальное трудоустройство в Чехии.">
+  <meta property="og:type" content="website">
+
+  <title>NástupCZ — Робота в Чехії</title>
+
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- App Root -->
+  <div id="app">
+    <!-- Rendered by app.js -->
+    <div style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      flex-direction:column;
+      gap:16px;
+    ">
+      <div style="font-size:48px">🇨🇿</div>
+      <div style="
+        width:40px;height:40px;
+        border:3px solid rgba(255,255,255,0.1);
+        border-top-color:#f4b400;
+        border-radius:50%;
+        animation:spin 0.7s linear infinite;
+      "></div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,8 +1,11 @@
-# NástupCZ — TOTAL DARKNESS (GEMINI INSTRUCTION)
+# NástupCZ — TOTAL DARKNESS + ROOT WHITELIST
 *
-# Возвращаем избранных
-!webapp/
-!webapp/app.js
-!webapp/index.html
-!webapp/styles.css
-!.gitignore
+/*
+**/
+
+# Разрешаем только избранных в корне
+!/.gitignore
+!/index.html
+!/app.js
+!/styles.css
+!/logo.png
