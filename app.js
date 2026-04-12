@@ -17,6 +17,7 @@ const I18N = {
     vacs: 'Вакансии', facs: 'Избранное', nasta: 'ИИ Наста', info: 'Инфо', search: 'Поиск...', 
     all: 'Все города', back: '← Назад', apply: 'ПОДАТЬ ЗАЯВКУ', loading: '⚡ NástupCZ...',
     empty: 'Ничего не найдено', housing: 'Жилье', schedule: 'График', salary: 'Зарплата', city: 'Город',
+    form_desc: 'После подачи заявки наш менеджер свяжется с вами в ближайшие дни. Ожидайте звонка.',
     h_desc: 'ОПИСАНИЕ', h_reqs: 'ТРЕБОВАНИЯ', h_cond: 'УСЛОВИЯ И БОНУСЫ',
     f_name: 'Имя (латинскими буквами)', f_last: 'Фамилия (латинскими буквами)',
     f_dob: 'Дата рождения', f_phone: 'Номер телефона (Viber/TG)',
@@ -190,8 +191,9 @@ function renderApply(t) {
   const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
 
   return `<div class="detail-cont" style="padding:20px 15px;"><div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
-      <div style="color:var(--gold); margin-bottom:30px; font-weight:700">${state.current.title}</div>
-      <form onsubmit="handleApply(event)">
+      <div style="color:var(--gold); margin-bottom:15px; font-weight:700">${state.current.title}</div>
+      <div class="form-instruction">${t.form_desc}</div>
+      <form onsubmit="handleApply(event)" style="margin-top:25px;">
         <div class="form-group"><label class="form-label">${t.f_name}</label><input type="text" id="l-f" class="search-input" required></div>
         <div class="form-group"><label class="form-label">${t.f_last}</label><input type="text" id="l-l" class="search-input" required></div>
         <div class="form-group"><label class="form-label">${t.f_dob}</label>
