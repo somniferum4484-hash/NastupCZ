@@ -175,7 +175,7 @@ function renderEducation(t) {
                 <div style="color:#fff; font-size:14px; line-height:1.5;">${e.conditions}</div>
               </div>
             ` : ''}
-            <button class="footer-btn" style="position:static; width:100%; border-radius:8px; margin:0;" onclick="openEduApply(${idx})">ЗАПИСАТЬСЯ НА КУРС</button>
+            <button class="edu-btn" onclick="openEduApply(${idx})">ЗАПИСАТЬСЯ НА КУРС</button>
           </div>
         </div>
       `).join('')}

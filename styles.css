@@ -132,3 +132,20 @@ html, body {
   border-left: 3px solid #4ade80;
   margin-bottom: 20px;
 }
+
+/* 🎓 EDUCATION BUTTON */
+.edu-btn {
+  background: var(--gold-grad);
+  color: #000;
+  border: none;
+  padding: 18px;
+  border-radius: 16px;
+  font-weight: 800;
+  width: 100%;
+  margin-top: 15px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 15px rgba(252, 196, 25, 0.2);
+}
+.edu-btn:active { transform: scale(0.98); }
