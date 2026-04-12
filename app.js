@@ -1,5 +1,5 @@
 /**
- * NástupCZ — ENGINE v2.9.5 (EDUCATION UPDATE)
+ * NástupCZ — ENGINE v3.0.0 (EDUCATION LEADS UPDATE)
  */
 
 const CONFIG = {
@@ -25,7 +25,8 @@ const I18N = {
 let state = {
   lang: 'ru',
   favs: JSON.parse(localStorage.getItem('favs') || '[]'),
-  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' }, page: 'list', loading: true
+  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' }, 
+  page: 'list', loading: true, current: null, isEdu: false
 };
 
 function fixImg(url) {
@@ -56,10 +57,8 @@ async function load() {
     const data = await res.json();
     state.vacs = (data.vacancies || []).map(v => ({ ...v, img: fixImg(v.image_url) }));
     state.filtered = [...state.vacs];
-    
     loadInfo();
     loadEducation();
-    
     state.loading = false;
     updateView();
   } catch (e) { console.error(e); }
@@ -85,6 +84,7 @@ function resetApp() {
   state.filters.city = '';
   state.filters.q = '';
   state.page = 'list';
+  state.isEdu = false;
   state.filtered = [...state.vacs];
   updateView();
   window.scrollTo(0,0);
@@ -158,23 +158,24 @@ function renderInfo(t) {
 function renderEducation(t) {
   if (state.education.length === 0) return `<div style="padding:100px 20px; text-align:center;">Загрузка программ обучения...</div>`;
   return `
-    <div class="main-grid" style="animation: fadeIn 0.3s; padding-bottom: 300px;">
+    <div class="main-grid" style="animation: fadeIn 0.3s; padding-bottom: 250px;">
       <h2 style="grid-column: 1/-1; color:#fff; text-align:center; font-size:24px; margin:20px 0 10px;">Программы Обучения</h2>
-      ${state.education.map(e => `
+      ${state.education.map((e, idx) => `
         <div class="d-card" style="padding:0; overflow:hidden; border:1px solid var(--gold); margin-bottom: 20px;">
-          <div style="background:var(--gold); color:#000; padding:15px; font-weight:800; font-size:16px;">${e.title}</div>
+          <div style="background:var(--gold); color:#000; padding:15px; font-weight:800; font-size:16px; border-bottom:1px solid rgba(0,0,0,0.1)">${e.title}</div>
           <div style="padding:20px;">
-            <div style="color:#fff; line-height:1.6; margin-bottom:20px; white-space: pre-wrap;">${e.content}</div>
+            <div style="color:#fff; line-height:1.6; margin-bottom:20px; white-space: pre-wrap; font-size:15px">${e.content}</div>
             <div class="detail-info-grid" style="margin-bottom:20px;">
               <div class="info-box"><span>СТОИМОСТЬ</span><span style="color:#fff">${e.price}</span></div>
               <div class="info-box"><span>СРОКИ</span><span style="color:#fff">${e.duration}</span></div>
             </div>
             ${e.conditions ? `
-              <div style="background:rgba(212,168,67,0.1); border-radius:8px; padding:15px; border-left:4px solid var(--gold);">
-                <div style="color:var(--gold); font-weight:800; font-size:12px; margin-bottom:5px; text-transform:uppercase;">Условия</div>
+              <div style="background:rgba(212,168,67,0.1); border-radius:8px; padding:15px; border-left:4px solid var(--gold); margin-bottom:20px">
+                <div style="color:var(--gold); font-weight:800; font-size:12px; margin-bottom:5px; text-transform:uppercase;">Условия получения сертификата</div>
                 <div style="color:#fff; font-size:14px; line-height:1.5;">${e.conditions}</div>
               </div>
             ` : ''}
+            <button class="footer-btn" style="position:static; width:100%; border-radius:8px; margin:0;" onclick="openEduApply(${idx})">ЗАПИСАТЬСЯ НА КУРС</button>
           </div>
         </div>
       `).join('')}
@@ -209,24 +210,21 @@ function renderDetail(t) {
 
 function renderApply(t) {
   const citizens = ['Украина','Россия','Беларусь','Чехия','Другое'];
-  const residences = [
-    'Виза дочасной охраны (Dočasná ochrana)',
-    'Рабочая карта (Zaměstnanecká karta)',
-    'ПМЖ (Trvalý pobyt)',
-    'Гражданство Чехии (České občanství)',
-    'Паспорт ЕС (EU pas)',
-    'Другое (Jiné)'
-  ];
+  const residences = ['Виза дочасной охраны (Dočasná ochrana)','Рабочая карта (Zaměstnanecká karta)','ПМЖ (Trvalý pobyt)','Гражданство Чехии (České občanství)','Паспорт ЕС (EU pas)','Другое (Jiné)'];
   const days = Array.from({length: 31}, (_, i) => i + 1);
   const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   const currentYear = new Date().getFullYear();
   const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
 
+  const title = state.isEdu ? state.current.title : state.current.title;
+  const subtitle = state.isEdu ? 'ЗАПИСЬ НА ОБУЧЕНИЕ' : state.current.company;
+
   return `<div class="detail-cont" style="padding: 30px 15px 320px;">
       <div id="top-anchor"></div>
-      <a href="#" class="d-back" onclick="nav('detail', event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:20px; font-weight:700; font-size:18px;">${t.back}</a>
+      <a href="#" class="d-back" onclick="nav(state.isEdu?'education':(state.page==='apply'?'detail':'list'), event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:20px; font-weight:700; font-size:18px;">${t.back}</a>
       <div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
-      <div style="color:var(--gold); margin-bottom:15px; font-weight:700">${state.current.title}</div>
+      <div style="color:var(--gold); margin-bottom:5px; font-weight:700; text-transform:uppercase; font-size:12px;">${subtitle}</div>
+      <div style="color:#fff; margin-bottom:15px; font-weight:800; font-size:18px">${title}</div>
       <div class="form-instruction">${t.form_desc}</div>
       <form onsubmit="handleApply(event)" style="margin-top:25px;">
         <div class="form-group"><label class="form-label">${t.f_name}</label><input type="text" id="l-f" class="search-input" required></div>
@@ -266,17 +264,17 @@ function setCity(c) { state.filters.city = c; applyFilters(); }
 function scrollUp() { 
   setTimeout(() => {
     window.scrollTo(0, 0);
-    document.body.scrollTop = 0; 
-    document.documentElement.scrollTop = 0;
     const top = document.getElementById('top-anchor');
     if (top) top.scrollIntoView();
   }, 80); 
 }
 function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); scrollUp(); }
-function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); scrollUp(); }
+function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); scrollUp(); }
+function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; state.page = 'apply'; updateView(); scrollUp(); }
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
+
 async function handleApply(e) { 
   e.preventDefault(); const t = I18N.ru; const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true; 
   const dob = `${document.getElementById('dob-d').value}.${document.getElementById('dob-m').value}.${document.getElementById('dob-y').value}`;
@@ -289,10 +287,12 @@ async function handleApply(e) {
     email: document.getElementById('l-e').value, 
     citizenship: document.getElementById('l-c').value, 
     residenceType: document.getElementById('l-r').value, 
-    vacancy_id: state.current.id, 
+    vacancy_id: state.isEdu ? 'EDU' : state.current.id, 
     vacancy_title: state.current.title,
-    vacancy_company: state.current.company
+    vacancy_company: state.isEdu ? 'ОБУЧЕНИЕ' : state.current.company
   }; 
   await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-  alert(t.s_success); state.page = 'list'; updateView(); 
+  alert(t.s_success); 
+  state.page = state.isEdu ? 'education' : 'list';
+  updateView(); 
 }
