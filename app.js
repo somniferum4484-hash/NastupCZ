@@ -258,7 +258,8 @@ async function handleApply(e) {
     citizenship: document.getElementById('l-c').value, 
     residenceType: document.getElementById('l-r').value, 
     vacancy_id: state.current.id, 
-    vacancy_title: state.current.title 
+    vacancy_title: state.current.title,
+    vacancy_company: state.current.company
   }; 
   await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); 
   alert(t.s_success); state.page = 'list'; updateView(); 
