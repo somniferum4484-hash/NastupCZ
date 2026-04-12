@@ -1,10 +1,5 @@
 /**
- * NástupCZ — ENGINE v2.9.0 (INFO PAGE + NASTA AI)
- * MASTER RULES: 
- * 1. ONLY RUSSIAN LANGUAGE. 
- * 2. NO LANGUAGE SWITCHER.
- * 3. LOGO GOES TO HOME.
- * 4. 4 BOTTOM BUTTONS: VACS, FAVS, NASTA, INFO.
+ * NástupCZ — ENGINE v2.9.5 (EDUCATION UPDATE)
  */
 
 const CONFIG = {
@@ -34,7 +29,23 @@ let state = {
 };
 
 function fixImg(url) {
-// ... (lines 37-55 stay same)
+  if (!url) return null;
+  const id = url.split('id=')[1] || url.split('/d/')[1]?.split('/')[0];
+  return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
+}
+
+function shortenSalary(s) {
+  if (!s) return '—';
+  let short = s.split('(')[0].split(';')[0].split(',')[0].trim();
+  return short.length > 35 ? short.substring(0, 32) + '...' : short;
+}
+
+function parseHousing(val, t) {
+  if (!val) return '—';
+  const v = val.toLowerCase();
+  if (v === 'нет' || v === 'no') return t.s_not_provided;
+  if (v === 'да' || v === 'yes') return t.s_provided;
+  return val;
 }
 
 window.onload = load;
@@ -46,7 +57,6 @@ async function load() {
     state.vacs = (data.vacancies || []).map(v => ({ ...v, img: fixImg(v.image_url) }));
     state.filtered = [...state.vacs];
     
-    // Подгружаем инфо и обучение асинхронно
     loadInfo();
     loadEducation();
     
@@ -72,7 +82,12 @@ async function loadEducation() {
 }
 
 function resetApp() {
-// ... (lines 82-89 stay same)
+  state.filters.city = '';
+  state.filters.q = '';
+  state.page = 'list';
+  state.filtered = [...state.vacs];
+  updateView();
+  window.scrollTo(0,0);
 }
 
 function updateView() {
@@ -90,10 +105,54 @@ function updateView() {
   }
 }
 
-// ... (renderHeader, renderList stay same)
+function renderHeader(t) {
+  const cities = [...new Set(state.vacs.map(v => v.city))].filter(c => c);
+  return `
+    <header class="glass-header">
+      <div class="brand-row" onclick="resetApp()" style="cursor:pointer">
+        <div class="logo-block">
+          <img src="logo.png" class="logo-img" onerror="this.src='https://img.icons8.com/clouds/100/job.png'">
+          <div class="logo-text">${CONFIG.NAME}</div>
+        </div>
+      </div>
+      ${state.page === 'list' ? `
+        <input type="text" class="search-input" value="${state.filters.q}" placeholder="${t.search}" oninput="debouncedSearch(this.value)">
+        <div class="city-scroller">
+          <button class="chip ${state.filters.city===''?'active':''}" onclick="setCity('')">${t.all}</button>
+          ${cities.map(c => `<button class="chip ${state.filters.city===c?'active':''}" onclick="setCity('${c}')">${c}</button>`).join('')}
+        </div>
+      ` : ''}
+    </header>
+  `;
+}
+
+function renderList(items, t) {
+  if (state.loading) return `<div style="padding:150px 0; text-align:center; color:#fff">${t.loading}</div>`;
+  if (items.length === 0) return `<div style="padding:100px 20px; text-align:center; color:#fff">${t.empty}</div>`;
+  return `<div class="main-grid">${items.map(v => {
+    const isFav = state.favs.includes(v.id);
+    return `<div class="v-card" onclick="openDet(${v.id})"><button class="star-btn ${isFav?'on':''}" onclick="toggleFav(event, ${v.id})">${isFav?'⭐':'☆'}</button>
+      <div class="v-company" style="color:var(--gold)">${v.company}</div><div class="v-title" style="color:#fff">${v.title}</div>
+      ${v.img ? `<img src="${v.img}" class="v-img-grid">` : ''}<div class="v-salary" style="color:#fff; font-weight:800">${shortenSalary(v.salary)}</div>
+      <div style="font-size:13px; color:var(--gold)">📍 ${v.city}</div></div>`;
+  }).join('')}</div>`;
+}
 
 function renderInfo(t) {
-// ... (lines 136-150 stay same)
+  if (state.info.length === 0) return `<div style="padding:100px 20px; text-align:center;">Загрузка инструкций...</div>`;
+  return `
+    <div class="main-grid" style="animation: fadeIn 0.3s">
+      <div class="d-card" style="padding:25px;">
+        <h2 style="color:var(--gold); margin-top:0;">Инструкции</h2>
+        ${state.info.map(i => `
+          <div style="margin-bottom:30px;">
+            <div style="color:var(--gold); font-weight:800; font-size:14px; text-transform:uppercase; margin-bottom:10px; border-left:3px solid var(--gold); padding-left:10px;">${i.category}</div>
+            <div style="color:#fff; line-height:1.6; white-space: pre-wrap;">${i.content}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderEducation(t) {
@@ -123,7 +182,76 @@ function renderEducation(t) {
   `;
 }
 
-// ... (renderDetail, renderApply stay same until renderBottom)
+function renderDetail(t) {
+  const v = state.current; const isFav = state.favs.includes(v.id);
+  const reqs = Array.isArray(v.requirements) ? v.requirements : (v.requirements ? [v.requirements] : []);
+  return `
+    <div class="detail-cont" style="animation: fadeIn 0.3s"><a href="#" class="d-back" onclick="nav('list', event)" style="color:var(--gold); text-decoration:none; padding-left:20px">${t.back}</a>
+      <div class="d-card">${v.img ? `<img src="${v.img}" style="width:100%; height:240px; object-fit:cover;">` : ''}
+        <div style="padding:25px;"><div style="display:flex; justify-content:space-between; align-items:flex-start"><div>
+                <div style="color:var(--gold); font-weight:800; font-size:13px; text-transform:uppercase; margin-bottom:5px">${v.company}</div>
+                <h1 style="margin:0; font-size:26px; color:#fff">${v.title}</h1></div>
+             <button class="star-btn ${isFav?'on':''}" style="position:static" onclick="toggleFav(event, ${v.id})">${isFav?'⭐':'☆'}</button></div>
+          <div class="detail-info-grid">
+            <div class="info-box"><span>${t.salary}</span><span style="color:#fff">${v.salary}</span></div>
+            <div class="info-box"><span>${t.city}</span><span style="color:#fff">${v.city}</span></div>
+            <div class="info-box"><span>${t.housing}</span><span style="color:#fff">${parseHousing(v.housing, t)}</span></div>
+            <div class="info-box"><span>${t.schedule}</span><span style="color:#fff">${v.schedule || '—'}</span></div>
+          </div>
+          <span class="d-sect">${t.h_desc}</span><p class="d-p" style="color:#fff">${v.description}</p>
+          ${reqs.length > 0 ? `<span class="d-sect">${t.h_reqs}</span><ul class="d-p" style="color:#fff; padding-left:40px">${reqs.map(r=>`<li>${r}</li>`).join('')}</ul>` : ''}
+          ${v.conditions ? `<span class="d-sect">${t.h_cond}</span><p class="d-p" style="color:#fff">${v.conditions}</p>` : ''}
+        </div>
+      </div><button class="footer-btn" onclick="nav('apply', event)">${t.apply}</button>
+    </div>
+  `;
+}
+
+function renderApply(t) {
+  const citizens = ['Украина','Россия','Беларусь','Чехия','Другое'];
+  const residences = [
+    'Виза дочасной охраны (Dočasná ochrana)',
+    'Рабочая карта (Zaměstnanecká karta)',
+    'ПМЖ (Trvalý pobyt)',
+    'Гражданство Чехии (České občanství)',
+    'Паспорт ЕС (EU pas)',
+    'Другое (Jiné)'
+  ];
+  const days = Array.from({length: 31}, (_, i) => i + 1);
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
+
+  return `<div class="detail-cont" style="padding: 30px 15px 320px;">
+      <div id="top-anchor"></div>
+      <a href="#" class="d-back" onclick="nav('detail', event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:20px; font-weight:700; font-size:18px;">${t.back}</a>
+      <div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
+      <div style="color:var(--gold); margin-bottom:15px; font-weight:700">${state.current.title}</div>
+      <div class="form-instruction">${t.form_desc}</div>
+      <form onsubmit="handleApply(event)" style="margin-top:25px;">
+        <div class="form-group"><label class="form-label">${t.f_name}</label><input type="text" id="l-f" class="search-input" required></div>
+        <div class="form-group"><label class="form-label">${t.f_last}</label><input type="text" id="l-l" class="search-input" required></div>
+        <div class="form-group"><label class="form-label">${t.f_dob}</label>
+          <div class="date-spinner-row">
+            <select id="dob-d" class="search-input mini-select" required><option value="">ДД</option>${days.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
+            <select id="dob-m" class="search-input mini-select" required><option value="">ММ</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+            <select id="dob-y" class="search-input mini-select" required><option value="">ГГГГ</option>${years.map(y=>`<option value="${y}">${y}</option>`).join('')}</select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">${t.f_phone}</label><input type="tel" id="l-p" class="search-input" placeholder="+..." required></div>
+        <div class="form-group"><label class="form-label">${t.f_email}</label><input type="email" id="l-e" class="search-input" required></div>
+        <div class="form-group"><label class="form-label">${t.f_citizen}</label><select id="l-c" class="search-input">
+          ${citizens.map(c => `<option value="${c}">${c}</option>`).join('')}
+        </select></div>
+        <div class="form-group"><label class="form-label">${t.f_res}</label><select id="l-r" class="search-input">
+          ${residences.map(r => `<option value="${r}">${r}</option>`).join('')}
+        </select></div>
+        <div style="display:flex; justify-content:center; width:100%;">
+          <button type="submit" class="footer-btn action-btn-center">${t.apply}</button>
+        </div>
+      </form>
+    </div></div>`;
+}
 
 function renderBottom(t) {
   return `<nav class="b-nav">
