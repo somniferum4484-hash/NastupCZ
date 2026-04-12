@@ -15,7 +15,7 @@ const CONFIG = {
 const I18N = {
   ru: { 
     vacs: 'Вакансии', facs: 'Избранное', nasta: 'ИИ Наста', info: 'Инфо', search: 'Поиск...', 
-    all: 'Все города', back: '← Назад', apply: 'ОТКЛИКНУТЬСЯ', loading: '⚡ NástupCZ...',
+    all: 'Все города', back: '← Назад', apply: 'ПОДАТЬ ЗАЯВКУ', loading: '⚡ NástupCZ...',
     empty: 'Ничего не найдено', housing: 'Жилье', schedule: 'График', salary: 'Зарплата', city: 'Город',
     h_desc: 'ОПИСАНИЕ', h_reqs: 'ТРЕБОВАНИЯ', h_cond: 'УСЛОВИЯ И БОНУСЫ',
     f_name: 'Имя (латинскими буквами)', f_last: 'Фамилия (латинскими буквами)',
@@ -183,12 +183,24 @@ function renderApply(t) {
     'Паспорт ЕС (EU pas)',
     'Другое (Jiné)'
   ];
+  
+  const days = Array.from({length: 31}, (_, i) => i + 1);
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
+
   return `<div class="detail-cont" style="padding:20px 15px;"><div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
       <div style="color:var(--gold); margin-bottom:30px; font-weight:700">${state.current.title}</div>
       <form onsubmit="handleApply(event)">
         <div class="form-group"><label class="form-label">${t.f_name}</label><input type="text" id="l-f" class="search-input" required></div>
         <div class="form-group"><label class="form-label">${t.f_last}</label><input type="text" id="l-l" class="search-input" required></div>
-        <div class="form-group"><label class="form-label">${t.f_dob}</label><input type="date" id="l-d" class="search-input" required></div>
+        <div class="form-group"><label class="form-label">${t.f_dob}</label>
+          <div class="date-spinner-row">
+            <select id="dob-d" class="search-input mini-select" required><option value="">ДД</option>${days.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
+            <select id="dob-m" class="search-input mini-select" required><option value="">ММ</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+            <select id="dob-y" class="search-input mini-select" required><option value="">ГГГГ</option>${years.map(y=>`<option value="${y}">${y}</option>`).join('')}</select>
+          </div>
+        </div>
         <div class="form-group"><label class="form-label">${t.f_phone}</label><input type="tel" id="l-p" class="search-input" placeholder="+..." required></div>
         <div class="form-group"><label class="form-label">${t.f_email}</label><input type="email" id="l-e" class="search-input" required></div>
         <div class="form-group"><label class="form-label">${t.f_citizen}</label><select id="l-c" class="search-input">
@@ -197,7 +209,9 @@ function renderApply(t) {
         <div class="form-group"><label class="form-label">${t.f_res}</label><select id="l-r" class="search-input">
           ${residences.map(r => `<option value="${r}">${r}</option>`).join('')}
         </select></div>
-        <button type="submit" class="footer-btn" style="position:static; width:100%; margin-top:30px; display:block">${t.apply}</button>
+        <div style="display:flex; justify-content:center; width:100%;">
+          <button type="submit" class="footer-btn action-btn-center">${t.apply}</button>
+        </div>
       </form><button onclick="nav('detail', event)" style="background:none; border:none; color:#cbd5e1; width:100%; margin-top:20px; cursor:pointer; font-size:14px">${t.f_cancel}</button>
     </div></div>`;
 }
@@ -217,4 +231,21 @@ function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
-async function handleApply(e) { e.preventDefault(); const t = I18N.ru; const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true; const payload = { action: 'submitLead', firstName: document.getElementById('l-f').value, lastName: document.getElementById('l-l').value, dob: document.getElementById('l-d').value, phone: document.getElementById('l-p').value, email: document.getElementById('l-e').value, citizenship: document.getElementById('l-c').value, residenceType: document.getElementById('l-r').value, vacancy_id: state.current.id, vacancy_title: state.current.title }; await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); alert(t.s_success); state.page = 'list'; updateView(); }
+async function handleApply(e) { 
+  e.preventDefault(); const t = I18N.ru; const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true; 
+  const dob = `${document.getElementById('dob-d').value}.${document.getElementById('dob-m').value}.${document.getElementById('dob-y').value}`;
+  const payload = { 
+    action: 'submitLead', 
+    firstName: document.getElementById('l-f').value, 
+    lastName: document.getElementById('l-l').value, 
+    dob: dob, 
+    phone: document.getElementById('l-p').value, 
+    email: document.getElementById('l-e').value, 
+    citizenship: document.getElementById('l-c').value, 
+    residenceType: document.getElementById('l-r').value, 
+    vacancy_id: state.current.id, 
+    vacancy_title: state.current.title 
+  }; 
+  await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+  alert(t.s_success); state.page = 'list'; updateView(); 
+}
