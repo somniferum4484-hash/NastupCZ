@@ -191,6 +191,7 @@ function renderApply(t) {
   const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
 
   return `<div class="detail-cont" style="padding: 30px 15px 320px;">
+      <div id="top-anchor"></div>
       <a href="#" class="d-back" onclick="nav('detail', event)" style="color:var(--gold); text-decoration:none; padding-left:20px; display:block; margin-bottom:20px; font-weight:700; font-size:18px;">${t.back}</a>
       <div class="d-card" style="padding:30px;"><h2 style="color:#fff; margin-bottom:10px">${t.apply}</h2>
       <div style="color:var(--gold); margin-bottom:15px; font-weight:700">${state.current.title}</div>
@@ -230,7 +231,15 @@ function renderBottom(t) {
 }
 
 function setCity(c) { state.filters.city = c; applyFilters(); }
-function scrollUp() { requestAnimationFrame(() => window.scrollTo({top: 0, behavior: 'instant'})); }
+function scrollUp() { 
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0; 
+    document.documentElement.scrollTop = 0;
+    const top = document.getElementById('top-anchor');
+    if (top) top.scrollIntoView();
+  }, 80); 
+}
 function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); scrollUp(); }
 function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); scrollUp(); }
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
