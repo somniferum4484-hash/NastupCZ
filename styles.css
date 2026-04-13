@@ -149,3 +149,13 @@ html, body {
   box-shadow: 0 4px 15px rgba(252, 196, 25, 0.2);
 }
 .edu-btn:active { transform: scale(0.98); }
+
+/* ❌ VALIDATION HINTS */
+.err-hint {
+  color: #ff4444;
+  font-size: 11px;
+  margin-top: 5px;
+  display: none;
+  font-weight: 600;
+  animation: fadeIn 0.2s;
+}
