@@ -282,15 +282,17 @@ function renderBottom(t) {
 
 function setCity(c) { state.filters.city = c; applyFilters(); }
 function scrollUp() { 
-  setTimeout(() => {
-    window.scrollTo(0, 0);
-    const top = document.getElementById('top-anchor');
-    if (top) top.scrollIntoView();
-  }, 80); 
+  window.scrollTo(0, 0); 
+  document.documentElement.scrollTop = 0; 
+  document.body.scrollTop = 0; 
+  setTimeout(() => { 
+    const top = document.getElementById('top-anchor'); 
+    if (top) top.scrollIntoView(); 
+  }, 10); 
 }
-function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); scrollUp(); }
-function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); scrollUp(); }
-function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; state.page = 'apply'; updateView(); scrollUp(); }
+function nav(p, e) { if(e) e.preventDefault(); state.page = p; scrollUp(); updateView(); }
+function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; scrollUp(); updateView(); }
+function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; state.page = 'apply'; scrollUp(); updateView(); }
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }

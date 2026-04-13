@@ -150,6 +150,20 @@ html, body {
 }
 .edu-btn:active { transform: scale(0.98); }
 
+/* 🔙 STICKY BACK BUTTON */
+.d-back {
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  padding: 15px 20px !important;
+  margin: -30px -30px 20px -30px !important;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.2);
+  display: block;
+}
+
 /* ❌ VALIDATION HINTS */
 .err-hint {
   color: #ff4444;
