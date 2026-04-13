@@ -228,84 +228,47 @@ function renderApply(t) {
       <div class="form-instruction">${t.form_desc}</div>
       <form id="apply-form" onsubmit="handleApply(event)" style="margin-top:25px;">
         <div class="form-group">
-          <label class="form-label">${t.f_name} (как в паспорте)</label>
-          <input type="text" id="l-f" class="search-input" oninput="vField(this, 'latin')" required>
-          <div id="err-l-f" class="err-hint">Только латинские буквы!</div>
+          <label class="form-label">${t.f_name} (латинскими буквами как в паспорте)</label>
+          <input type="text" id="l-f" class="search-input" pattern="^[A-Za-z\\s\\-]+$" title="Только ЛАТИНСКИЕ буквы (как в паспорте)" required>
         </div>
         <div class="form-group">
-          <label class="form-label">${t.f_last} (как в паспорте)</label>
-          <input type="text" id="l-l" class="search-input" oninput="vField(this, 'latin')" required>
-          <div id="err-l-l" class="err-hint">Только латинские буквы!</div>
+          <label class="form-label">${t.f_last} (латинскими буквами как в паспорте)</label>
+          <input type="text" id="l-l" class="search-input" pattern="^[A-Za-z\\s\\-]+$" title="Только ЛАТИНСКИЕ буквы (как в паспорте)" required>
         </div>
         <div class="form-group"><label class="form-label">${t.f_dob}</label>
           <div class="date-spinner-row">
-            <select id="dob-d" class="search-input mini-select" required onchange="vForm()"><option value="" disabled selected>ДД</option>${days.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
-            <select id="dob-m" class="search-input mini-select" required onchange="vForm()"><option value="" disabled selected>ММ</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
-            <select id="dob-y" class="search-input mini-select" required onchange="vForm()"><option value="" disabled selected>ГГГГ</option>${years.map(y=>`<option value="${y}">${y}</option>`).join('')}</select>
+            <select id="dob-d" class="search-input mini-select" required><option value="" disabled selected>ДД</option>${days.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
+            <select id="dob-m" class="search-input mini-select" required><option value="" disabled selected>ММ</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+            <select id="dob-y" class="search-input mini-select" required><option value="" disabled selected>ГГГГ</option>${years.map(y=>`<option value="${y}">${y}</option>`).join('')}</select>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">${t.f_phone}</label>
-          <input type="tel" id="l-p" class="search-input" placeholder="+..." oninput="vField(this, 'phone')" required>
-          <div id="err-l-p" class="err-hint">Формат: + и цифры (международный)</div>
+          <input type="tel" id="l-p" class="search-input" placeholder="+..." pattern="^\\+\\d{7,15}$" title="Формат: + и цифры (международный)" required>
         </div>
         <div class="form-group">
           <label class="form-label">${t.f_email}</label>
-          <input type="email" id="l-e" class="search-input" oninput="vField(this, 'email')" required>
-          <div id="err-l-e" class="err-hint">Введите корректный Email</div>
+          <input type="email" id="l-e" class="search-input" title="Введите корректный Email" required>
         </div>
         <div class="form-group">
           <label class="form-label">${t.f_citizen}</label>
-          <select id="l-c" class="search-input" onchange="vForm()" required>
+          <select id="l-c" class="search-input" required>
             <option value="" disabled selected>Выберите из списка...</option>
             ${citizens.map(c => `<option value="${c}">${c}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">${t.f_res}</label>
-          <select id="l-r" class="search-input" onchange="vForm()" required>
+          <select id="l-r" class="search-input" required>
             <option value="" disabled selected>Выберите из списка...</option>
             ${residences.map(r => `<option value="${r}">${r}</option>`).join('')}
           </select>
         </div>
         <div style="display:flex; justify-content:center; width:100%;">
-          <button type="submit" id="submit-btn" class="footer-btn action-btn-center" disabled>${t.apply}</button>
+          <button type="submit" id="submit-btn" class="footer-btn action-btn-center">${t.apply}</button>
         </div>
       </form>
     </div></div>`;
-}
-
-// === ВАЛИДАЦИЯ (НОВОЕ) ===
-function vField(el, type) {
-  const err = document.getElementById('err-' + el.id);
-  let ok = true;
-  if (type === 'latin') ok = /^[A-Za-z\s\-]+$/.test(el.value) || el.value === '';
-  if (type === 'phone') ok = /^\+\d{7,15}$/.test(el.value) || el.value === '';
-  if (type === 'email') ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value) || el.value === '';
-  
-  el.style.borderColor = ok ? '' : '#ff4444';
-  if (err) err.style.display = ok ? 'none' : 'block';
-  vForm();
-}
-
-function vForm() {
-  const f = document.getElementById('l-f').value;
-  const l = document.getElementById('l-l').value;
-  const p = document.getElementById('l-p').value;
-  const e = document.getElementById('l-e').value;
-  const c = document.getElementById('l-c').value;
-  const r = document.getElementById('l-r').value;
-  const d = document.getElementById('dob-d').value;
-  const m = document.getElementById('dob-m').value;
-  const y = document.getElementById('dob-y').value;
-
-  const ok = /^[A-Za-z\s\-]+$/.test(f) && 
-             /^[A-Za-z\s\-]+$/.test(l) && 
-             /^\+\d{7,15}$/.test(p) && 
-             /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) &&
-             c && r && d && m && y;
-
-  document.getElementById('submit-btn').disabled = !ok;
 }
 
 function renderBottom(t) {
@@ -333,7 +296,17 @@ function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) st
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
 
 async function handleApply(e) { 
-  e.preventDefault(); const t = I18N.ru; const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true; 
+  e.preventDefault(); 
+  const form = document.getElementById('apply-form');
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const t = I18N.ru; 
+  const btn = e.target.querySelector('button'); 
+  btn.innerText = "..."; btn.disabled = true; 
+  
   const dob = `${document.getElementById('dob-d').value}.${document.getElementById('dob-m').value}.${document.getElementById('dob-y').value}`;
   const payload = { 
     action: 'submitLead', 
