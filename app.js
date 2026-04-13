@@ -1,6 +1,7 @@
 /**
- * NástupCZ — ENGINE v3.0.0 (EDUCATION LEADS UPDATE)
+ * NástupCZ — ENGINE v3.1.2 (TELEGRAM UI FIX)
  */
+if (window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.expand();
 
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbxwJX9gVpAbzJ4wS2J3BGv59HTcbIo_eZMDZb_IfD6oe_UkdwhUkqdh5vt_lhGALtnk/exec',
