@@ -127,12 +127,14 @@ function renderHeader(t) {
   `;
 }
 
+const SVG_STAR = `<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+
 function renderList(items, t) {
   if (state.loading) return `<div style="padding:150px 0; text-align:center; color:#fff">${t.loading}</div>`;
   if (items.length === 0) return `<div style="padding:100px 20px; text-align:center; color:#fff">${t.empty}</div>`;
   return `<div class="main-grid">${items.map(v => {
     const isFav = state.favs.includes(v.id);
-    return `<div class="v-card" onclick="openDet(${v.id})"><button class="star-btn ${isFav?'on':''}" onclick="toggleFav(event, ${v.id})">${isFav?'⭐':'☆'}</button>
+    return `<div class="v-card" onclick="openDet(${v.id})"><button class="star-btn ${isFav?'on':''}" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button>
       <div class="v-company" style="color:var(--gold)">${v.company}</div><div class="v-title" style="color:#fff">${v.title}</div>
       ${v.img ? `<img src="${v.img}" class="v-img-grid">` : ''}<div class="v-salary" style="color:#fff; font-weight:800">${shortenSalary(v.salary)}</div>
       <div style="font-size:13px; color:var(--gold)">📍 ${v.city}</div></div>`;
@@ -193,7 +195,7 @@ function renderDetail(t) {
         <div style="padding:25px;"><div style="display:flex; justify-content:space-between; align-items:flex-start"><div>
                 <div style="color:var(--gold); font-weight:800; font-size:13px; text-transform:uppercase; margin-bottom:5px">${v.company}</div>
                 <h1 style="margin:0; font-size:26px; color:#fff">${v.title}</h1></div>
-             <button class="star-btn ${isFav?'on':''}" style="position:static" onclick="toggleFav(event, ${v.id})">${isFav?'⭐':'☆'}</button></div>
+             <button class="star-btn ${isFav?'on':''}" style="position:static" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button></div>
           <div class="detail-info-grid">
             <div class="info-box"><span>${t.salary}</span><span style="color:#fff">${v.salary}</span></div>
             <div class="info-box"><span>${t.city}</span><span style="color:#fff">${v.city}</span></div>
