@@ -1,7 +1,10 @@
 /**
  * NástupCZ — ENGINE v3.1.2 (TELEGRAM UI FIX)
  */
-if (window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.expand();
+if (window.Telegram && window.Telegram.WebApp) {
+  window.Telegram.WebApp.expand();
+  window.Telegram.WebApp.ready();
+}
 
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbxwJX9gVpAbzJ4wS2J3BGv59HTcbIo_eZMDZb_IfD6oe_UkdwhUkqdh5vt_lhGALtnk/exec',
@@ -39,7 +42,7 @@ function debounce(func, delay) {
   };
 }
 
-const applyFiltersDebounced = debounce(applyFilters, 300);
+const applyFiltersDebounced = debounce(applyFilters, 400);
 
 function saveFocus() {
   const active = document.activeElement;
@@ -122,31 +125,35 @@ function updateView() {
   const root = document.getElementById('app');
   const t = I18N.ru;
 
-  if (!root.dataset.init) {
+  let hBox = document.getElementById('h-c');
+  let mBox = document.getElementById('m-c');
+  let nBox = document.getElementById('n-c');
+
+  if (!hBox) {
+    // Initial structure setup - ONLY HAPPENS ONCE
     root.innerHTML = `<div id="h-c"></div><div id="m-c"></div><div id="n-c"></div>`;
-    root.dataset.init = "1";
+    hBox = document.getElementById('h-c');
+    mBox = document.getElementById('m-c');
+    nBox = document.getElementById('n-c');
   }
-  const hBox = document.getElementById('h-c');
-  const mBox = document.getElementById('m-c');
-  const nBox = document.getElementById('n-c');
 
   if (state.page === 'list' || state.page === 'favs' || state.page === 'education' || state.page === 'info') {
     const isList = state.page === 'list';
     
-    // Update header ONLY if type changed (to keep input focus)
-    const hType = isList ? 'search' : 'plain';
-    if (hBox.dataset.type !== hType) {
+    // Header logic: Update ONLY if page type changed
+    const hType = isList ? 'search' : (state.page === 'favs' ? 'plain' : state.page);
+    if (hBox.getAttribute('data-type') !== hType) {
       hBox.innerHTML = renderHeader(t);
-      hBox.dataset.type = hType;
-    } else {
-      // Just update active chips if we are in list mode
+      hBox.setAttribute('data-type', hType);
+    } else if (isList) {
+      // Just update chips active class without touching innerHTML
       hBox.querySelectorAll('.chip').forEach(c => {
         const city = c.innerText === t.all ? '' : c.innerText;
         c.classList.toggle('active', state.filters.city === city);
       });
     }
 
-    // Update main content
+    // Main content: Update list or static pages
     if (state.page === 'list' || state.page === 'favs') {
       const items = state.page === 'favs' ? state.vacs.filter(v => state.favs.includes(v.id)) : state.filtered;
       mBox.innerHTML = renderList(items, t);
@@ -155,15 +162,16 @@ function updateView() {
     } else if (state.page === 'info') {
       mBox.innerHTML = renderInfo(t);
     }
-
-    nBox.innerHTML = renderBottom(t);
   } else {
     // Detail / Apply pages
     hBox.innerHTML = '';
-    hBox.dataset.type = 'none';
+    hBox.setAttribute('data-type', 'none');
     mBox.innerHTML = (state.page === 'detail' ? renderDetail(t) : renderApply(t));
-    nBox.innerHTML = renderBottom(t);
   }
+  
+  // navBox always updated as it has no inputs
+  nBox.innerHTML = renderBottom(t);
+  
   restoreFocus(fState);
 }
 
