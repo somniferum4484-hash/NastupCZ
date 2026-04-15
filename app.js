@@ -41,6 +41,21 @@ function debounce(func, delay) {
 
 const applyFiltersDebounced = debounce(applyFilters, 300);
 
+function saveFocus() {
+  const active = document.activeElement;
+  if (!active || !active.id) return null;
+  return { id: active.id, start: active.selectionStart, end: active.selectionEnd };
+}
+
+function restoreFocus(fState) {
+  if (!fState) return;
+  const el = document.getElementById(fState.id);
+  if (el) {
+    el.focus();
+    if (typeof fState.start === 'number') el.setSelectionRange(fState.start, fState.end);
+  }
+}
+
 function fixImg(url) {
   if (!url) return null;
   const id = url.split('id=')[1] || url.split('/d/')[1]?.split('/')[0];
@@ -103,6 +118,7 @@ function resetApp() {
 }
 
 function updateView() {
+  const fState = saveFocus();
   const root = document.getElementById('app');
   const t = I18N.ru;
 
@@ -148,6 +164,7 @@ function updateView() {
     mBox.innerHTML = (state.page === 'detail' ? renderDetail(t) : renderApply(t));
     nBox.innerHTML = renderBottom(t);
   }
+  restoreFocus(fState);
 }
 
 function renderHeader(t) {
@@ -161,7 +178,7 @@ function renderHeader(t) {
         </div>
       </div>
       ${state.page === 'list' ? `
-        <input type="text" class="search-input" value="${state.filters.q}" placeholder="${t.search}" oninput="debouncedSearch(this.value)">
+        <input type="text" id="main-search" class="search-input" value="${state.filters.q}" placeholder="${t.search}" oninput="debouncedSearch(this.value)">
         <div class="city-scroller">
           <button class="chip ${state.filters.city === '' ? 'active' : ''}" onclick="setCity('')">${t.all}</button>
           ${cities.map(c => `<button class="chip ${state.filters.city === c ? 'active' : ''}" onclick="setCity('${c}')">${c}</button>`).join('')}
