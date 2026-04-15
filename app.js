@@ -109,10 +109,14 @@ async function load() {
     state.vacs = (data.vacancies || []).map(v => ({ ...v, img: fixImg(v.image_url) }));
     state.filtered = [...state.vacs];
     state.loading = false;
+    // Загружаем дополнительные данные в фоне
+    loadInfo();
+    loadEducation();
     // Добавляем начальную точку в историю, чтобы "назад" не закрывал приложение сразу
     if (!history.state) history.replaceState({ page: 'list' }, '');
     updateView();
-  } catch (e) { console.error(e); }
+  } catch (e) {
+ console.error(e); }
 }
 
 async function loadInfo() {
@@ -132,7 +136,7 @@ async function loadEducation() {
 }
 
 function resetApp() {
-  state.filters.city = '';
+  state.filters.cities = [];
   state.filters.q = '';
   state.page = 'list';
   state.isEdu = false;
