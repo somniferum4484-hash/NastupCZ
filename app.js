@@ -5,8 +5,26 @@ if (window.Telegram && window.Telegram.WebApp) {
   const tg = window.Telegram.WebApp;
   tg.expand();
   tg.ready();
-  // Подключаем родную кнопку "Назад" Telegram
-  tg.BackButton.onClick(() => history.back());
+  tg.enableClosingConfirmation();
+  // Подключаем родную кнопку "Назад" Telegram к нашей функции возврата
+  tg.BackButton.onClick(() => handleBack());
+}
+
+function handleBack() {
+  if (state.page === 'apply') {
+    state.page = state.isEdu ? 'education' : 'detail';
+    scrollUp(); updateView();
+  } else if (state.page === 'detail') {
+    state.page = 'list';
+    scrollUp(); updateView();
+  } else {
+    // В других случаях пробуем системный возврат
+    if (window.history.length > 1) {
+      history.back();
+    } else {
+      if (window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.close();
+    }
+  }
 }
 
 const CONFIG = {
@@ -90,9 +108,9 @@ async function load() {
     const data = await res.json();
     state.vacs = (data.vacancies || []).map(v => ({ ...v, img: fixImg(v.image_url) }));
     state.filtered = [...state.vacs];
-    loadInfo();
-    loadEducation();
     state.loading = false;
+    // Добавляем начальную точку в историю, чтобы "назад" не закрывал приложение сразу
+    if (!history.state) history.replaceState({ page: 'list' }, '');
     updateView();
   } catch (e) { console.error(e); }
 }
@@ -378,16 +396,8 @@ function openEduApply(idx) { state.isEdu = true; state.current = state.education
 
 // Перехват аппаратной кнопки "Назад" (Android) и свайпов (iOS)
 window.addEventListener('popstate', function (e) {
-  if (state.page === 'detail') {
-    state.page = 'list';
-    scrollUp(); updateView();
-  } else if (state.page === 'apply') {
-    state.page = state.isEdu ? 'education' : 'detail';
-    scrollUp(); updateView();
-  } else if (e.state && e.state.page) {
-    state.page = e.state.page;
-    scrollUp(); updateView();
-  }
+  // Вызываем нашу унифицированную логику возврата
+  handleBack();
 });
 function debouncedSearch(v) { state.filters.q = v; applyFiltersDebounced(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
