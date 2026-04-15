@@ -108,15 +108,15 @@ async function load() {
     const data = await res.json();
     state.vacs = (data.vacancies || []).map(v => ({ ...v, img: fixImg(v.image_url) }));
     state.filtered = [...state.vacs];
+    
+    // Ждем загрузки всех данных
+    await Promise.all([loadInfo(), loadEducation()]);
+    
     state.loading = false;
-    // Загружаем дополнительные данные в фоне
-    loadInfo();
-    loadEducation();
     // Добавляем начальную точку в историю, чтобы "назад" не закрывал приложение сразу
     if (!history.state) history.replaceState({ page: 'list' }, '');
     updateView();
-  } catch (e) {
- console.error(e); }
+  } catch (e) { console.error(e); }
 }
 
 async function loadInfo() {
@@ -124,6 +124,7 @@ async function loadInfo() {
     const res = await fetch(`${CONFIG.API_URL}?action=getInfo`);
     const data = await res.json();
     state.info = data.info || [];
+    if (state.page === 'info') updateView();
   } catch (e) { console.warn('Info sheet not found or empty'); }
 }
 
@@ -132,6 +133,7 @@ async function loadEducation() {
     const res = await fetch(`${CONFIG.API_URL}?action=getEducation`);
     const data = await res.json();
     state.education = data.education || [];
+    if (state.page === 'education') updateView();
   } catch (e) { console.warn('Education sheet not found or empty'); }
 }
 
