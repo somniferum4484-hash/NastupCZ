@@ -5,7 +5,7 @@ if (window.Telegram && window.Telegram.WebApp) {
   const tg = window.Telegram.WebApp;
   tg.expand();
   tg.ready();
-  tg.enableClosingConfirmation();
+// tg.enableClosingConfirmation(); // Убрано по требованию пользователя
   // Подключаем родную кнопку "Назад" Telegram к нашей функции возврата
   tg.BackButton.onClick(() => handleBack());
 }
