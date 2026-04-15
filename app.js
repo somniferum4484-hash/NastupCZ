@@ -26,9 +26,20 @@ const I18N = {
 let state = {
   lang: 'ru',
   favs: JSON.parse(localStorage.getItem('favs') || '[]'),
-  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' },
-  page: 'list', loading: true, current: null, isEdu: false
+  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' }, 
+  page: 'list', loading: true, current: null, isEdu: false,
+  lastPageType: ''
 };
+
+let debounceTimer;
+function debounce(func, delay) {
+  return function(...args) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+const applyFiltersDebounced = debounce(applyFilters, 300);
 
 function fixImg(url) {
   if (!url) return null;
@@ -94,15 +105,48 @@ function resetApp() {
 function updateView() {
   const root = document.getElementById('app');
   const t = I18N.ru;
-  if (state.page === 'list' || state.page === 'favs') {
-    const items = state.page === 'favs' ? state.vacs.filter(v => state.favs.includes(v.id)) : state.filtered;
-    root.innerHTML = `${renderHeader(t)}${renderList(items, t)}${renderBottom(t)}`;
-  } else if (state.page === 'info') {
-    root.innerHTML = `${renderHeader(t)}${renderInfo(t)}${renderBottom(t)}`;
-  } else if (state.page === 'education') {
-    root.innerHTML = `${renderHeader(t)}${renderEducation(t)}${renderBottom(t)}`;
+
+  if (!root.dataset.init) {
+    root.innerHTML = `<div id="h-c"></div><div id="m-c"></div><div id="n-c"></div>`;
+    root.dataset.init = "1";
+  }
+  const hBox = document.getElementById('h-c');
+  const mBox = document.getElementById('m-c');
+  const nBox = document.getElementById('n-c');
+
+  if (state.page === 'list' || state.page === 'favs' || state.page === 'education' || state.page === 'info') {
+    const isList = state.page === 'list';
+    
+    // Update header ONLY if type changed (to keep input focus)
+    const hType = isList ? 'search' : 'plain';
+    if (hBox.dataset.type !== hType) {
+      hBox.innerHTML = renderHeader(t);
+      hBox.dataset.type = hType;
+    } else {
+      // Just update active chips if we are in list mode
+      hBox.querySelectorAll('.chip').forEach(c => {
+        const city = c.innerText === t.all ? '' : c.innerText;
+        c.classList.toggle('active', state.filters.city === city);
+      });
+    }
+
+    // Update main content
+    if (state.page === 'list' || state.page === 'favs') {
+      const items = state.page === 'favs' ? state.vacs.filter(v => state.favs.includes(v.id)) : state.filtered;
+      mBox.innerHTML = renderList(items, t);
+    } else if (state.page === 'education') {
+      mBox.innerHTML = renderEducation(t);
+    } else if (state.page === 'info') {
+      mBox.innerHTML = renderInfo(t);
+    }
+
+    nBox.innerHTML = renderBottom(t);
   } else {
-    root.innerHTML = `${state.page === 'detail' ? renderDetail(t) : renderApply(t)}${renderBottom(t)}`;
+    // Detail / Apply pages
+    hBox.innerHTML = '';
+    hBox.dataset.type = 'none';
+    mBox.innerHTML = (state.page === 'detail' ? renderDetail(t) : renderApply(t));
+    nBox.innerHTML = renderBottom(t);
   }
 }
 
@@ -302,7 +346,7 @@ window.addEventListener('popstate', function () {
   if (state.page === 'detail') { state.page = 'list'; scrollUp(); updateView(); }
   else if (state.page === 'apply') { state.page = state.isEdu ? 'education' : 'detail'; scrollUp(); updateView(); }
 });
-function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
+function debouncedSearch(v) { state.filters.q = v; applyFiltersDebounced(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
 
