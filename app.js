@@ -2,8 +2,11 @@
  * NástupCZ — ENGINE v3.1.2 (TELEGRAM UI FIX)
  */
 if (window.Telegram && window.Telegram.WebApp) {
-  window.Telegram.WebApp.expand();
-  window.Telegram.WebApp.ready();
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+  tg.ready();
+  // Подключаем родную кнопку "Назад" Telegram
+  tg.BackButton.onClick(() => history.back());
 }
 
 const CONFIG = {
@@ -171,6 +174,13 @@ function updateView() {
   
   // navBox always updated as it has no inputs
   nBox.innerHTML = renderBottom(t);
+  
+  // Управление кнопкой "Назад" в Telegram
+  if (window.Telegram && window.Telegram.WebApp) {
+    const tg = window.Telegram.WebApp;
+    const isMain = ['list', 'favs', 'education', 'info'].includes(state.page);
+    if (!isMain) tg.BackButton.show(); else tg.BackButton.hide();
+  }
   
   restoreFocus(fState);
 }
@@ -367,9 +377,17 @@ function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v =>
 function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; history.pushState({ view: 'education_apply' }, ''); state.page = 'apply'; scrollUp(); updateView(); }
 
 // Перехват аппаратной кнопки "Назад" (Android) и свайпов (iOS)
-window.addEventListener('popstate', function () {
-  if (state.page === 'detail') { state.page = 'list'; scrollUp(); updateView(); }
-  else if (state.page === 'apply') { state.page = state.isEdu ? 'education' : 'detail'; scrollUp(); updateView(); }
+window.addEventListener('popstate', function (e) {
+  if (state.page === 'detail') {
+    state.page = 'list';
+    scrollUp(); updateView();
+  } else if (state.page === 'apply') {
+    state.page = state.isEdu ? 'education' : 'detail';
+    scrollUp(); updateView();
+  } else if (e.state && e.state.page) {
+    state.page = e.state.page;
+    scrollUp(); updateView();
+  }
 });
 function debouncedSearch(v) { state.filters.q = v; applyFiltersDebounced(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
