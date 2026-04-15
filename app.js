@@ -294,8 +294,14 @@ function scrollUp() {
   }, 10); 
 }
 function nav(p, e) { if(e) e.preventDefault(); state.page = p; scrollUp(); updateView(); }
-function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; scrollUp(); updateView(); }
-function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; state.page = 'apply'; scrollUp(); updateView(); }
+function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); history.pushState({ view: 'detail' }, ''); state.page = 'detail'; scrollUp(); updateView(); }
+function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; history.pushState({ view: 'education_apply' }, ''); state.page = 'apply'; scrollUp(); updateView(); }
+
+// Перехват аппаратной кнопки "Назад" (Android) и свайпов (iOS)
+window.addEventListener('popstate', function() {
+  if (state.page === 'detail') { state.page = 'list'; scrollUp(); updateView(); }
+  else if (state.page === 'apply') { state.page = state.isEdu ? 'education' : 'detail'; scrollUp(); updateView(); }
+});
 function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
