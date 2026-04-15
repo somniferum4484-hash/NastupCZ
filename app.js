@@ -50,7 +50,7 @@ const I18N = {
 let state = {
   lang: 'ru',
   favs: JSON.parse(localStorage.getItem('favs') || '[]'),
-  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' }, 
+  vacs: [], filtered: [], info: [], education: [], filters: { cities: [], q: '' }, 
   page: 'list', loading: true, current: null, isEdu: false,
   lastPageType: ''
 };
@@ -170,7 +170,8 @@ function updateView() {
       // Just update chips active class without touching innerHTML
       hBox.querySelectorAll('.chip').forEach(c => {
         const city = c.innerText === t.all ? '' : c.innerText;
-        c.classList.toggle('active', state.filters.city === city);
+        const isActive = city === '' ? state.filters.cities.length === 0 : state.filters.cities.includes(city);
+        c.classList.toggle('active', isActive);
       });
     }
 
@@ -216,8 +217,8 @@ function renderHeader(t) {
       ${state.page === 'list' ? `
         <input type="text" id="main-search" class="search-input" value="${state.filters.q}" placeholder="${t.search}" oninput="debouncedSearch(this.value)">
         <div class="city-scroller">
-          <button class="chip ${state.filters.city === '' ? 'active' : ''}" onclick="setCity('')">${t.all}</button>
-          ${cities.map(c => `<button class="chip ${state.filters.city === c ? 'active' : ''}" onclick="setCity('${c}')">${c}</button>`).join('')}
+          <button class="chip ${state.filters.cities.length === 0 ? 'active' : ''}" onclick="toggleCity('')">${t.all}</button>
+          ${cities.map(c => `<button class="chip ${state.filters.cities.includes(c) ? 'active' : ''}" onclick="toggleCity('${c}')">${c}</button>`).join('')}
         </div>
       ` : ''}
     </header>
@@ -380,7 +381,16 @@ function renderBottom(t) {
   </nav>`;
 }
 
-function setCity(c) { state.filters.city = c; applyFilters(); }
+function toggleCity(c) {
+  if (!c) {
+    state.filters.cities = [];
+  } else {
+    const idx = state.filters.cities.indexOf(c);
+    if (idx === -1) state.filters.cities.push(c);
+    else state.filters.cities.splice(idx, 1);
+  }
+  applyFilters();
+}
 function scrollUp() {
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -401,7 +411,7 @@ window.addEventListener('popstate', function (e) {
 });
 function debouncedSearch(v) { state.filters.q = v; applyFiltersDebounced(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
-function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
+function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = state.filters.cities.length === 0 || state.filters.cities.includes(v.city); const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
 
 async function handleApply(e) {
   e.preventDefault();
