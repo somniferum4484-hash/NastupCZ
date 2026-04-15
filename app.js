@@ -9,8 +9,8 @@ const CONFIG = {
 };
 
 const I18N = {
-  ru: { 
-    vacs: 'Вакансии', facs: 'Избранное', edu: 'Обучение', info: 'Инфо', search: 'Поиск...', 
+  ru: {
+    vacs: 'Вакансии', facs: 'Избранное', edu: 'Обучение', info: 'Инфо', search: 'Поиск...',
     all: 'Все города', back: '← Назад', apply: 'ПОДАТЬ ЗАЯВКУ', loading: '⚡ NástupCZ...',
     empty: 'Ничего не найдено', housing: 'Жилье', schedule: 'График', salary: 'Зарплата', city: 'Город',
     form_desc: 'После подачи заявки наш менеджер свяжется с вами в ближайшие дни. Ожидайте звонка.',
@@ -26,7 +26,7 @@ const I18N = {
 let state = {
   lang: 'ru',
   favs: JSON.parse(localStorage.getItem('favs') || '[]'),
-  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' }, 
+  vacs: [], filtered: [], info: [], education: [], filters: { city: '', q: '' },
   page: 'list', loading: true, current: null, isEdu: false
 };
 
@@ -88,7 +88,7 @@ function resetApp() {
   state.isEdu = false;
   state.filtered = [...state.vacs];
   updateView();
-  window.scrollTo(0,0);
+  window.scrollTo(0, 0);
 }
 
 function updateView() {
@@ -102,7 +102,7 @@ function updateView() {
   } else if (state.page === 'education') {
     root.innerHTML = `${renderHeader(t)}${renderEducation(t)}${renderBottom(t)}`;
   } else {
-    root.innerHTML = `${state.page==='detail'?renderDetail(t):renderApply(t)}${renderBottom(t)}`;
+    root.innerHTML = `${state.page === 'detail' ? renderDetail(t) : renderApply(t)}${renderBottom(t)}`;
   }
 }
 
@@ -119,8 +119,8 @@ function renderHeader(t) {
       ${state.page === 'list' ? `
         <input type="text" class="search-input" value="${state.filters.q}" placeholder="${t.search}" oninput="debouncedSearch(this.value)">
         <div class="city-scroller">
-          <button class="chip ${state.filters.city===''?'active':''}" onclick="setCity('')">${t.all}</button>
-          ${cities.map(c => `<button class="chip ${state.filters.city===c?'active':''}" onclick="setCity('${c}')">${c}</button>`).join('')}
+          <button class="chip ${state.filters.city === '' ? 'active' : ''}" onclick="setCity('')">${t.all}</button>
+          ${cities.map(c => `<button class="chip ${state.filters.city === c ? 'active' : ''}" onclick="setCity('${c}')">${c}</button>`).join('')}
         </div>
       ` : ''}
     </header>
@@ -134,7 +134,7 @@ function renderList(items, t) {
   if (items.length === 0) return `<div style="padding:100px 20px; text-align:center; color:#fff">${t.empty}</div>`;
   return `<div class="main-grid">${items.map(v => {
     const isFav = state.favs.includes(v.id);
-    return `<div class="v-card" onclick="openDet(${v.id})"><button class="star-btn ${isFav?'on':''}" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button>
+    return `<div class="v-card" onclick="openDet(${v.id})"><button class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button>
       <div class="v-company" style="color:var(--gold)">${v.company}</div><div class="v-title" style="color:#fff">${v.title}</div>
       ${v.img ? `<img src="${v.img}" class="v-img-grid">` : ''}<div class="v-salary" style="color:#fff; font-weight:800">${shortenSalary(v.salary)}</div>
       <div style="font-size:13px; color:var(--gold)">📍 ${v.city}</div></div>`;
@@ -195,7 +195,7 @@ function renderDetail(t) {
         <div style="padding:25px;"><div style="display:flex; justify-content:space-between; align-items:flex-start"><div>
                 <div style="color:var(--gold); font-weight:800; font-size:13px; text-transform:uppercase; margin-bottom:5px">${v.company}</div>
                 <h1 style="margin:0; font-size:26px; color:#fff">${v.title}</h1></div>
-             <button class="star-btn ${isFav?'on':''}" style="position:static" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button></div>
+             <button class="star-btn ${isFav ? 'on' : ''}" style="position:static" onclick="toggleFav(event, ${v.id})">${SVG_STAR}</button></div>
           <div class="detail-info-grid">
             <div class="info-box"><span>${t.salary}</span><span style="color:#fff">${v.salary}</span></div>
             <div class="info-box"><span>${t.city}</span><span style="color:#fff">${v.city}</span></div>
@@ -203,7 +203,7 @@ function renderDetail(t) {
             <div class="info-box"><span>${t.schedule}</span><span style="color:#fff">${v.schedule || '—'}</span></div>
           </div>
           <span class="d-sect">${t.h_desc}</span><p class="d-p" style="color:#fff">${v.description}</p>
-          ${reqs.length > 0 ? `<span class="d-sect">${t.h_reqs}</span><ul class="d-p" style="color:#fff; padding-left:40px">${reqs.map(r=>`<li>${r}</li>`).join('')}</ul>` : ''}
+          ${reqs.length > 0 ? `<span class="d-sect">${t.h_reqs}</span><ul class="d-p" style="color:#fff; padding-left:40px">${reqs.map(r => `<li>${r}</li>`).join('')}</ul>` : ''}
           ${v.conditions ? `<span class="d-sect">${t.h_cond}</span><p class="d-p" style="color:#fff">${v.conditions}</p>` : ''}
         </div>
       </div><button class="footer-btn" onclick="nav('apply', event)">${t.apply}</button>
@@ -212,12 +212,12 @@ function renderDetail(t) {
 }
 
 function renderApply(t) {
-  const citizens = ['Украина','Россия','Беларусь','Чехия','Другое'];
-  const residences = ['Виза дочасной охраны (Dočasná ochrana)','Рабочая карта (Zaměstnanecká karta)','ПМЖ (Trvalý pobyt)','Гражданство Чехии (České občanství)','Паспорт ЕС (EU pas)','Другое (Jiné)'];
-  const days = Array.from({length: 31}, (_, i) => i + 1);
-  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const citizens = ['Украина', 'Россия', 'Беларусь', 'Чехия', 'Другое'];
+  const residences = ['Виза дочасной охраны (Dočasná ochrana)', 'Рабочая карта (Zaměstnanecká karta)', 'ПМЖ (Trvalý pobyt)', 'Гражданство Чехии (České občanství)', 'Паспорт ЕС (EU pas)', 'Другое (Jiné)'];
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   const currentYear = new Date().getFullYear();
-  const years = Array.from({length: 80}, (_, i) => currentYear - 16 - i);
+  const years = Array.from({ length: 80 }, (_, i) => currentYear - 16 - i);
 
   const title = state.isEdu ? state.current.title : state.current.title;
   const subtitle = state.isEdu ? 'ЗАПИСЬ НА ОБУЧЕНИЕ' : state.current.company;
@@ -240,9 +240,9 @@ function renderApply(t) {
         </div>
         <div class="form-group"><label class="form-label">${t.f_dob}</label>
           <div class="date-spinner-row">
-            <select id="dob-d" class="search-input mini-select" required><option value="" disabled selected>ДД</option>${days.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
-            <select id="dob-m" class="search-input mini-select" required><option value="" disabled selected>ММ</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
-            <select id="dob-y" class="search-input mini-select" required><option value="" disabled selected>ГГГГ</option>${years.map(y=>`<option value="${y}">${y}</option>`).join('')}</select>
+            <select id="dob-d" class="search-input mini-select" required><option value="" disabled selected>ДД</option>${days.map(d => `<option value="${d}">${d}</option>`).join('')}</select>
+            <select id="dob-m" class="search-input mini-select" required><option value="" disabled selected>ММ</option>${months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}</select>
+            <select id="dob-y" class="search-input mini-select" required><option value="" disabled selected>ГГГГ</option>${years.map(y => `<option value="${y}">${y}</option>`).join('')}</select>
           </div>
         </div>
         <div class="form-group">
@@ -276,29 +276,29 @@ function renderApply(t) {
 
 function renderBottom(t) {
   return `<nav class="b-nav">
-    <div class="b-item ${state.page==='list'?'active':''}" onclick="nav('list')"><span class="b-ico">💼</span><span>${t.vacs}</span></div>
-    <div class="b-item ${state.page==='favs'?'active':''}" onclick="nav('favs')"><span class="b-ico">⭐</span><span>${t.facs}</span></div>
-    <div class="b-item ${state.page==='education'?'active':''}" onclick="nav('education')"><span class="b-ico">🎓</span><span>${t.edu}</span></div>
-    <div class="b-item ${state.page==='info'?'active':''}" onclick="nav('info')"><span class="b-ico">ℹ️</span><span>${t.info}</span></div>
+    <div class="b-item ${state.page === 'list' ? 'active' : ''}" onclick="nav('list')"><span class="b-ico">💼</span><span>${t.vacs}</span></div>
+    <div class="b-item ${state.page === 'favs' ? 'active' : ''}" onclick="nav('favs')"><span class="b-ico">⭐</span><span>${t.facs}</span></div>
+    <div class="b-item ${state.page === 'education' ? 'active' : ''}" onclick="nav('education')"><span class="b-ico">🎓</span><span>${t.edu}</span></div>
+    <div class="b-item ${state.page === 'info' ? 'active' : ''}" onclick="nav('info')"><span class="b-ico">ℹ️</span><span>${t.info}</span></div>
   </nav>`;
 }
 
 function setCity(c) { state.filters.city = c; applyFilters(); }
-function scrollUp() { 
-  window.scrollTo(0, 0); 
-  document.documentElement.scrollTop = 0; 
-  document.body.scrollTop = 0; 
-  setTimeout(() => { 
-    const top = document.getElementById('top-anchor'); 
-    if (top) top.scrollIntoView(); 
-  }, 10); 
+function scrollUp() {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  setTimeout(() => {
+    const top = document.getElementById('top-anchor');
+    if (top) top.scrollIntoView();
+  }, 10);
 }
-function nav(p, e) { if(e) e.preventDefault(); state.page = p; scrollUp(); updateView(); }
+function nav(p, e) { if (e) e.preventDefault(); state.page = p; scrollUp(); updateView(); }
 function openDet(id) { state.isEdu = false; state.current = state.vacs.find(v => v.id === id); history.pushState({ view: 'detail' }, ''); state.page = 'detail'; scrollUp(); updateView(); }
 function openEduApply(idx) { state.isEdu = true; state.current = state.education[idx]; history.pushState({ view: 'education_apply' }, ''); state.page = 'apply'; scrollUp(); updateView(); }
 
 // Перехват аппаратной кнопки "Назад" (Android) и свайпов (iOS)
-window.addEventListener('popstate', function() {
+window.addEventListener('popstate', function () {
   if (state.page === 'detail') { state.page = 'list'; scrollUp(); updateView(); }
   else if (state.page === 'apply') { state.page = state.isEdu ? 'education' : 'detail'; scrollUp(); updateView(); }
 });
@@ -306,34 +306,34 @@ function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
 
-async function handleApply(e) { 
-  e.preventDefault(); 
+async function handleApply(e) {
+  e.preventDefault();
   const form = document.getElementById('apply-form');
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
   }
 
-  const t = I18N.ru; 
-  const btn = e.target.querySelector('button'); 
-  btn.innerText = "..."; btn.disabled = true; 
-  
+  const t = I18N.ru;
+  const btn = e.target.querySelector('button');
+  btn.innerText = "..."; btn.disabled = true;
+
   const dob = `${document.getElementById('dob-d').value}.${document.getElementById('dob-m').value}.${document.getElementById('dob-y').value}`;
-  const payload = { 
-    action: 'submitLead', 
-    firstName: document.getElementById('l-f').value, 
-    lastName: document.getElementById('l-l').value, 
-    dob: dob, 
-    phone: document.getElementById('l-p').value, 
-    email: document.getElementById('l-e').value, 
-    citizenship: document.getElementById('l-c').value, 
-    residenceType: document.getElementById('l-r').value, 
-    vacancy_id: state.isEdu ? 'EDU' : state.current.id, 
+  const payload = {
+    action: 'submitLead',
+    firstName: document.getElementById('l-f').value,
+    lastName: document.getElementById('l-l').value,
+    dob: dob,
+    phone: document.getElementById('l-p').value,
+    email: document.getElementById('l-e').value,
+    citizenship: document.getElementById('l-c').value,
+    residenceType: document.getElementById('l-r').value,
+    vacancy_id: state.isEdu ? 'EDU' : state.current.id,
     vacancy_title: state.current.title,
     vacancy_company: state.isEdu ? 'ОБУЧЕНИЕ' : state.current.company
-  }; 
-  await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-  alert(t.s_success); 
+  };
+  await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) });
+  alert(t.s_success);
   state.page = state.isEdu ? 'education' : 'list';
-  updateView(); 
+  updateView();
 }
