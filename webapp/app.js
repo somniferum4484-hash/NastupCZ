@@ -29,8 +29,19 @@ const I18N = {
 let state = {
   lang: 'ru',
   favs: JSON.parse(localStorage.getItem('favs') || '[]'),
-  vacs: [], filtered: [], info: [], filters: { city: '', q: '' }, page: 'list', loading: true
+  vacs: [], filtered: [], info: [], filters: { city: '', q: '' }, page: 'list', loading: true,
+  lastPageType: ''
 };
+
+let debounceTimer;
+function debounce(func, delay) {
+  return function(...args) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+const applyFiltersDebounced = debounce(applyFilters, 300);
 
 function fixImg(url) {
   if (!url) return null;
@@ -89,13 +100,44 @@ function resetApp() {
 function updateView() {
   const root = document.getElementById('app');
   const t = I18N.ru;
+
+  if (!root.dataset.init) {
+    root.innerHTML = `<div id="h-c"></div><div id="m-c"></div><div id="n-c"></div>`;
+    root.dataset.init = "1";
+  }
+  const hBox = document.getElementById('h-c');
+  const mBox = document.getElementById('m-c');
+  const nBox = document.getElementById('n-c');
+
   if (state.page === 'list' || state.page === 'favs') {
+    const isList = state.page === 'list';
     const items = state.page === 'favs' ? state.vacs.filter(v => state.favs.includes(v.id)) : state.filtered;
-    root.innerHTML = `${renderHeader(t)}${renderList(items, t)}${renderBottom(t)}`;
+    
+    // Update header only if type changed (to keep focus)
+    const hType = isList ? 'search' : 'plain';
+    if (hBox.dataset.type !== hType) {
+      hBox.innerHTML = renderHeader(t);
+      hBox.dataset.type = hType;
+    } else {
+      // Just update active chips
+      hBox.querySelectorAll('.chip').forEach(c => {
+        const city = c.innerText === t.all ? '' : c.innerText;
+        c.classList.toggle('active', state.filters.city === city);
+      });
+    }
+    
+    mBox.innerHTML = renderList(items, t);
+    nBox.innerHTML = renderBottom(t);
   } else if (state.page === 'info') {
-    root.innerHTML = `${renderHeader(t)}${renderInfo(t)}${renderBottom(t)}`;
+    hBox.innerHTML = renderHeader(t);
+    hBox.dataset.type = 'info';
+    mBox.innerHTML = renderInfo(t);
+    nBox.innerHTML = renderBottom(t);
   } else {
-    root.innerHTML = `${state.page==='detail'?renderDetail(t):renderApply(t)}${renderBottom(t)}`;
+    hBox.innerHTML = '';
+    hBox.dataset.type = 'none';
+    mBox.innerHTML = (state.page === 'detail' ? renderDetail(t) : renderApply(t));
+    nBox.innerHTML = renderBottom(t);
   }
 }
 
@@ -214,7 +256,7 @@ function renderBottom(t) {
 function setCity(c) { state.filters.city = c; applyFilters(); }
 function nav(p, e) { if(e) e.preventDefault(); state.page = p; updateView(); window.scrollTo(0,0); }
 function openDet(id) { state.current = state.vacs.find(v => v.id === id); state.page = 'detail'; updateView(); window.scrollTo(0,0); }
-function debouncedSearch(v) { state.filters.q = v; applyFilters(); }
+function debouncedSearch(v) { state.filters.q = v; applyFiltersDebounced(); }
 function toggleFav(e, id) { e.stopPropagation(); if (state.favs.includes(id)) state.favs = state.favs.filter(i => i !== id); else state.favs.push(id); localStorage.setItem('favs', JSON.stringify(state.favs)); updateView(); }
 function applyFilters() { state.filtered = state.vacs.filter(v => { const mCity = !state.filters.city || v.city === state.filters.city; const mSearch = !state.filters.q || (v.title + v.description + v.company).toLowerCase().includes(state.filters.q.toLowerCase()); return mCity && mSearch; }); updateView(); }
 async function handleApply(e) { e.preventDefault(); const t = I18N.ru; const btn = e.target.querySelector('button'); btn.innerText = "..."; btn.disabled = true; const payload = { action: 'submitLead', firstName: document.getElementById('l-f').value, lastName: document.getElementById('l-l').value, dob: document.getElementById('l-d').value, phone: document.getElementById('l-p').value, email: document.getElementById('l-e').value, citizenship: document.getElementById('l-c').value, residenceType: document.getElementById('l-r').value, vacancy_id: state.current.id, vacancy_title: state.current.title }; await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(payload) }); alert(t.s_success); state.page = 'list'; updateView(); }
